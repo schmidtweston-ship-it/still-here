@@ -1,0 +1,161 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2b2238"><link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg"><link rel="apple-touch-icon" href="icon-192.png">
+<title>Still Here — my plan for the hard nights</title>
+<style>
+:root{--bg:#2b2238;--card:#3d3150;--card2:#4b3d62;--txt:#fbecc8;--dim:#dcc8a4;--acc:#ffb36b;--ok:#8fd9b0;--help:#f5a3b8;--sos:#ff8a6b;--ink:#2a1e14;--paper:#f6e7c8}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--txt);font:600 23px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;padding-bottom:120px}
+main{max-width:740px;margin:auto;padding:14px 16px}
+h1{font-size:46px;line-height:1.15;margin:12px 0 4px}h2{font-size:34px;margin:10px 0}h3{font-size:27px;margin:8px 0}
+p{margin:8px 0}.dim{color:var(--dim)}small{font-size:19px}
+button,.btn{display:block;width:100%;border:0;border-radius:22px;padding:20px;margin:12px 0;font:800 27px system-ui,sans-serif;color:var(--ink);background:var(--acc);text-align:center;text-decoration:none;cursor:pointer}
+button:focus-visible,.btn:focus-visible,input:focus-visible,textarea:focus-visible{outline:5px solid var(--ok);outline-offset:3px}
+.big{font-size:38px;padding:38px 18px;background:var(--sos)}.okb{background:var(--ok)}.helpb{background:var(--help)}
+.ghost{background:var(--card2);color:var(--txt)}.row{display:flex;gap:10px}.row>*{flex:1}
+.card{background:var(--card);border-radius:24px;padding:16px 18px;margin:14px 0}
+.item{display:flex;align-items:center;gap:10px;background:var(--card2);border-radius:16px;padding:12px 14px;margin:8px 0}
+.item span{flex:1}.x{width:auto;margin:0;padding:10px 16px;font-size:22px;background:var(--card);color:var(--txt)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.chip{width:auto;margin:0;padding:10px 16px;font:700 20px system-ui;border-radius:30px;background:var(--card2);color:var(--txt)}
+input,textarea{width:100%;font:600 24px system-ui,sans-serif;padding:16px;border-radius:16px;border:3px solid var(--card2);background:#fff3dc;color:var(--ink);margin:6px 0}
+textarea{min-height:110px}
+.say{font-size:40px;line-height:1.25;font-weight:800;margin:20px 0}
+.step{font-size:20px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em}
+.photo{width:100%;max-height:360px;object-fit:cover;border-radius:22px;margin:10px 0}
+.strip{position:fixed;left:0;right:0;bottom:0;background:#3a2a3f;border-top:4px solid var(--sos);padding:10px 14px calc(10px + env(safe-area-inset-bottom))}
+.strip .row{max-width:740px;margin:auto}.strip a{margin:0;padding:16px 8px;font-size:23px;background:var(--sos)}
+.strip a.t{background:var(--help)}
+.orb{width:220px;height:220px;border-radius:50%;margin:30px auto;background:radial-gradient(circle,var(--acc),var(--sos));transition:transform 4s ease-in-out;transform:scale(.55)}
+.timer{font-size:84px;font-weight:900;text-align:center;margin:10px 0}
+.prog{height:14px;background:var(--card2);border-radius:10px;overflow:hidden;margin:10px 0}.prog i{display:block;height:100%;background:var(--ok)}
+.hidden{display:none}
+#print{display:none}
+@media print{body{background:var(--paper);color:var(--ink);padding:0;font-size:13pt}main,.strip{display:none!important}#print{display:block;padding:10mm}
+#print h1{font-size:22pt;margin:0 0 4mm}#print h3{font-size:14pt;margin:4mm 0 1mm;border-bottom:1px solid #8a6a4a}#print ul{margin:0;padding-left:6mm}#print .foot{margin-top:6mm;font-weight:800}}
+</style></head><body>
+<main id="app"></main>
+<div id="print"></div>
+<div class="strip" id="strip"><div class="row"><a class="btn" href="tel:988">Call 988</a><a class="btn t" href="sms:988">Text 988</a><a class="btn" href="tel:911" style="background:var(--acc)">911</a></div></div>
+<script>
+const KEY='still-here-v1';
+const STEPS=[
+ {k:'reasons',t:'Why I keep going',n:'The people, pets, plans, and songs worth staying for.',ex:['My kids','My mom','Seeing what I build next','My dog','The next good song','People I help'],kind:'text'},
+ {k:'signs',t:'How I know a hard time is starting',n:'Thoughts, feelings, or things that happen right before it gets dark.',ex:['I stop answering texts','I can\'t sleep','I think nobody would notice','I want to drink or use','I feel numb','I stop eating right'],kind:'text'},
+ {k:'self',t:'Things I can do on my own',n:'Coping skills I can pull without anyone else. Practice them before you need them.',ex:['Paced breathing, in 4 and out 6','Cold water on my face','5-4-3-2-1 grounding','Walk around the block','Play the drums','Take a hot shower','Put on Jimmy Buffett','Eat something and check my sugar'],kind:'text'},
+ {k:'places',t:'People and places that take my mind off it',n:'Not to talk about it. Just to not be alone with it.',ex:['A coffee shop','The library','A meeting','Call a friend just to talk','Sit outside with someone','Go to the gym'],kind:'text'},
+ {k:'people',t:'People I can tell I\'m not okay',n:'Name and number. People who will pick up.',kind:'contact'},
+ {k:'pros',t:'Professionals and crisis lines',n:'Therapist, doctor, sponsor, counselor. 988 is always here too.',kind:'contact'},
+ {k:'safe',t:'Making my space safer',n:'Putting time and distance between me and anything I could hurt myself with.',ex:['Give my meds to someone I trust to hold','Lock up or move anything I could hurt myself with','Keep alcohol out of the house','Ask someone to stay with me tonight','Stay out of the car until I\'m steady'],kind:'text'}];
+const DEF_SELF=['Paced breathing, in 4 and out 6','Cold water on your face for 30 seconds','5-4-3-2-1: name 5 things you see, 4 you can touch, 3 you hear, 2 you smell, 1 you taste','Put on a song you love, loud','Walk to another room, or outside'];
+let S=load();
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s)return Object.assign(blank(),s)}catch(e){}return blank()}
+function blank(){return{name:'',photo:null,reasons:[],signs:[],self:[],places:[],people:[],pros:[],safe:[],helped:{},walks:[],updated:null}}
+function save(){setTimeout(()=>{try{renderPrint()}catch(e){}},0);S.updated=new Date().toISOString();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){alert('This phone is out of room. Try a smaller photo.')}}
+const $=s=>document.querySelector(s);const app=$('#app');
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const tel=p=>String(p||'').replace(/[^\d+]/g,'');
+function filled(){return STEPS.filter(s=>S[s.k].length).length}
+function go(v,...a){stopAll();window.scrollTo(0,0);V[v](...a);history.replaceState(null,'','#'+v)}
+let timers=[];function stopAll(){timers.forEach(id=>{clearInterval(id);clearTimeout(id)});timers=[];try{speechSynthesis.cancel()}catch(e){}}
+function speak(t){try{if(!S.voice)return;const u=new SpeechSynthesisUtterance(t);u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
+const V={};
+V.home=()=>{const f=filled();app.innerHTML=`
+<h1>Still Here</h1><p class="dim">My plan for the hard nights. It lives on this phone only.</p>
+<button class="big" data-go="walk">I'm not okay right now</button>
+${f?`<button data-go="plan">Read my plan</button>`:''}
+<button class="${f?'ghost':''}" data-go="build">${f?'Change my plan':'Make my plan (10 minutes)'}</button>
+<div class="prog"><i style="width:${Math.round(f/STEPS.length*100)}%"></i></div><p class="dim"><small>${f} of ${STEPS.length} parts filled in.${S.updated?' Last changed '+new Date(S.updated).toLocaleDateString()+'.':''}</small></p>
+<div class="row"><button class="ghost" data-go="breathe">Breathe with me</button><button class="ghost" data-go="show">Show someone</button></div>
+<div class="row"><button class="ghost" data-go="card">Print my card</button><button class="ghost" data-go="helper">Helping someone</button></div>
+<button class="ghost" data-go="more">Settings and backup</button>
+<p class="dim"><small>Still Here is a safety plan, the kind counselors build with people. It is not a doctor or a crisis line. If you might act on thoughts of ending your life, call or text 988, or call 911.</small></p>`};
+V.build=(i=0)=>{const s=STEPS[i];const L=S[s.k];app.innerHTML=`
+<p class="step">Part ${i+1} of ${STEPS.length}</p><h2>${s.t}</h2><p class="dim">${s.n}</p>
+${s.k==='reasons'?photoBlock():''}
+<div id="list">${L.map((x,j)=>`<div class="item"><span>${s.kind==='contact'?`${esc(x.name)}<br><small class="dim">${esc(x.phone)}</small>`:esc(x)}</span>${j?`<button class="x" data-up="${j}" aria-label="Move up">Up</button>`:''}<button class="x" data-del="${j}" aria-label="Remove">Remove</button></div>`).join('')||'<p class="dim">Nothing here yet.</p>'}</div>
+${s.kind==='contact'?`<input id="nm" placeholder="Name" autocomplete="off"><input id="ph" placeholder="Phone number" inputmode="tel" autocomplete="off">`:`<input id="nm" placeholder="Write it in your own words" autocomplete="off">`}
+<button class="okb" id="add">Add it</button>
+${s.ex?`<p class="dim"><small>Or tap one to add it:</small></p><div class="chips">${s.ex.filter(e=>!L.includes(e)).map(e=>`<button class="chip" data-ex="${esc(e)}">+ ${esc(e)}</button>`).join('')}</div>`:''}
+${s.k==='pros'?`<p class="dim"><small>988 Suicide and Crisis Lifeline (call or text 988) is always on your plan.</small></p>`:''}
+<div class="row">${i?`<button class="ghost" data-step="${i-1}">Back</button>`:`<button class="ghost" data-go="home">Home</button>`}${i<STEPS.length-1?`<button data-step="${i+1}">Next</button>`:`<button data-go="plan">Done</button>`}</div>`;
+ const nm=$('#nm'),ph=$('#ph');const add=()=>{const v=nm.value.trim();if(!v)return nm.focus();if(s.kind==='contact'){const p=ph.value.trim();if(!p)return ph.focus();L.push({name:v,phone:p})}else L.push(v);save();V.build(i);$('#nm').focus()};
+ $('#add').onclick=add;[nm,ph].forEach(e=>e&&e.addEventListener('keydown',ev=>{if(ev.key==='Enter')add()}));
+ app.querySelectorAll('[data-ex]').forEach(b=>b.onclick=()=>{L.push(b.dataset.ex);save();V.build(i)});
+ app.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{L.splice(+b.dataset.del,1);save();V.build(i)});
+ app.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>{const j=+b.dataset.up;[L[j-1],L[j]]=[L[j],L[j-1]];save();V.build(i)});
+ app.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{window.scrollTo(0,0);V.build(+b.dataset.step)});
+ const pf=$('#pf');if(pf){pf.onchange=()=>addPhoto(pf.files[0],()=>V.build(i));const pr=$('#prm');if(pr)pr.onclick=()=>{S.photo=null;save();V.build(i)}}};
+function photoBlock(){return S.photo?`<img class="photo" src="${S.photo}" alt="My reason"><button class="ghost" id="prm">Remove photo</button>`:`<label class="btn ghost" for="pf">Add a photo of who or what I'm staying for</label><input id="pf" type="file" accept="image/*" class="hidden">`}
+function addPhoto(f,cb){if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const m=900,sc=Math.min(1,m/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=im.width*sc;c.height=im.height*sc;c.getContext('2d').drawImage(im,0,0,c.width,c.height);S.photo=c.toDataURL('image/jpeg',.8);save();cb()};im.src=r.result};r.readAsDataURL(f)}
+function listHTML(s){const L=S[s.k];if(s.kind==='contact')return (L.map(x=>`<div class="item"><span>${esc(x.name)}</span><a class="btn x" href="tel:${tel(x.phone)}">Call</a><a class="btn x" href="sms:${tel(x.phone)}">Text</a></div>`).join(''))+(s.k==='pros'?`<div class="item"><span>988 Suicide and Crisis Lifeline</span><a class="btn x" href="tel:988">Call</a><a class="btn x" href="sms:988">Text</a></div>`:'');return L.length?L.map(x=>`<div class="item"><span>${esc(x)}</span></div>`).join(''):'<p class="dim">Not filled in yet.</p>'}
+V.plan=()=>{app.innerHTML=`<h1>${S.name?esc(S.name)+"'s plan":'My plan'}</h1>
+${S.photo?`<img class="photo" src="${S.photo}" alt="My reason">`:''}
+${STEPS.map((s,i)=>`<div class="card"><p class="step">${i+1}</p><h3>${s.t}</h3>${listHTML(s)}</div>`).join('')}
+<button class="big" data-go="walk">I'm not okay right now</button><div class="row"><button class="ghost" data-go="build">Change it</button><button class="ghost" data-go="home">Home</button></div>`};
+// The walk: one thing at a time. If one doesn't work, pull the next one.
+let W;
+V.walk=()=>{const helped=S.helped||{};const self=(S.self.length?S.self.slice():DEF_SELF.slice()).sort((a,b)=>(helped[b]||0)-(helped[a]||0));
+ W={q:[],i:0,start:Date.now(),tried:[]};
+ W.q.push({t:'open'});if(S.reasons.length||S.photo)W.q.push({t:'reasons'});
+ if(S.safe.length)W.q.push({t:'safe'});
+ self.forEach(x=>W.q.push({t:'self',x,def:!S.self.length}));
+ S.places.forEach(x=>W.q.push({t:'place',x}));
+ W.q.push({t:'people'});W.q.push({t:'pros'});walkStep()};
+function walkStep(){stopAll();window.scrollTo(0,0);const c=W.q[W.i];const left=W.q.length-W.i-1;const foot=`<div class="row"><button class="ghost" id="wb">Breathe with me</button><button class="ghost" id="wq">Home</button></div>`;
+ let h='';
+ if(c.t==='open'){h=`<p class="say">You opened this. That was the right move.</p><p>We'll go one thing at a time. If one doesn't work, we pull the next one. You don't have to feel better yet. You just have to get through the next few minutes.</p>
+ <div class="card"><p><b>If you are in danger right now</b>, or you have something you could hurt yourself with in your hand, call 911 or 988 first.</p></div>
+ <button class="okb" id="wn">Okay. Start.</button>`;speak('You opened this. That was the right move. We will go one thing at a time.')}
+ else if(c.t==='reasons'){h=`<p class="step">Remember why</p>${S.photo?`<img class="photo" src="${S.photo}" alt="My reason">`:''}${S.reasons.map(r=>`<p class="say">${esc(r)}</p>`).join('')}<button id="wn">Next</button>`;speak('Remember why. '+S.reasons.join('. '))}
+ else if(c.t==='safe'){h=`<p class="step">Make it safer first</p><p>Put some distance between you and anything that could hurt you. Even ten minutes and one room helps.</p>${S.safe.map(x=>`<div class="item"><span>${esc(x)}</span></div>`).join('')}<button class="okb" id="wn">Done, or doing it</button>`}
+ else if(c.t==='self'||c.t==='place'){h=`<p class="step">${c.t==='self'?'Try this':'Go be around this'}</p><p class="say">${esc(c.x)}</p>${c.def?'<p class="dim"><small>(This one is a starter. Put your own in your plan later.)</small></p>':''}
+ <div id="tm"></div><button class="ghost" id="w5">Give it 5 minutes</button>
+ <button class="okb" id="wy">That helped. I'm steadier.</button><button id="wn">Pull the next one</button>`;speak((c.t==='self'?'Try this. ':'Go be around this. ')+c.x)}
+ else if(c.t==='people'){h=`<p class="step">Reach out</p><p class="say">Tell someone you're not okay.</p><p>You don't have to explain it. "I'm having a hard night, can you talk?" is enough.</p>${S.people.length?listHTML(STEPS[4]):'<p class="dim">No people in your plan yet. 988 is right below.</p>'}
+ <button class="okb" id="wy">I reached someone</button><button id="wn">Nobody picked up. Next.</button>`;speak('Tell someone you are not okay.')}
+ else if(c.t==='pros'){h=`<p class="step">Call for help</p><p class="say">Call or text 988. A real person picks up, day or night.</p>${listHTML(STEPS[5])}
+ <a class="btn big" href="tel:988">Call 988 now</a><a class="btn helpb" href="sms:988">Text 988</a><button class="okb" id="wy">I'm getting help</button>`;speak('Call or text 9 8 8. A real person picks up, day or night.')}
+ app.innerHTML=h+(left>0&&c.t!=='open'?`<p class="dim"><small>${left} more thing${left>1?'s':''} on your plan after this.</small></p>`:'')+foot;
+ const n=$('#wn');if(n)n.onclick=()=>{if(c.x)W.tried.push(c.x);W.i++;walkStep()};
+ const y=$('#wy');if(y)y.onclick=()=>walkDone(c.x||c.t);
+ const f5=$('#w5');if(f5)f5.onclick=()=>{f5.remove();let s=300;const tm=$('#tm');const tk=()=>{tm.innerHTML=`<div class="timer">${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}</div>`;if(s--<=0){clearInterval(t);tm.innerHTML='<p class="say">Five minutes. How is it now?</p>';speak('Five minutes. How is it now?')}};const t=setInterval(tk,1000);timers.push(t);tk()};
+ $('#wb').onclick=()=>V.breathe(true);$('#wq').onclick=()=>go('home')}
+function walkDone(what){if(what&&what.length>12||S.self.includes(what)||S.places.includes(what)){S.helped[what]=(S.helped[what]||0)+1}
+ S.walks.unshift({at:new Date().toISOString(),helped:what,tried:W.tried});S.walks=S.walks.slice(0,60);save();stopAll();window.scrollTo(0,0);
+ app.innerHTML=`<p class="say">You got through this one.</p><p>That counts. Every time you get through one, you get better at the next.</p>
+ ${S.self.includes(what)?`<p class="dim">"${esc(what)}" will come up first next time.</p>`:''}
+ <div class="card"><p>Still a good idea: let one person know tonight was hard. And if it comes back, open this again.</p></div>
+ ${S.people.length?listHTML(STEPS[4]):''}<button data-go="home">Home</button>`;speak('You got through this one. That counts.')}
+V.breathe=(back)=>{stopAll();window.scrollTo(0,0);app.innerHTML=`<h2>Breathe with me</h2><div class="orb" id="orb"></div><p class="say" id="bt" style="text-align:center">Breathe in... 4</p><p class="dim" style="text-align:center">In through your nose for 4. Out slow through your mouth for 6.</p><button id="bx">${back?'Back to my plan':'Home'}</button>`;
+ const orb=$('#orb'),bt=$('#bt');let inn=true;const cyc=()=>{if(inn){orb.style.transition='transform 4s ease-in-out';orb.style.transform='scale(1)';bt.textContent='Breathe in... 4'}else{orb.style.transition='transform 6s ease-in-out';orb.style.transform='scale(.55)';bt.textContent='Breathe out... 6'}speak(inn?'In':'Out');const d=inn?4000:6000;inn=!inn;timers.push(setTimeout(cyc,d))};
+ timers.push(setTimeout(cyc,300));
+ $('#bx').onclick=()=>{stopAll();back&&W?walkStep():go('home')}};
+V.show=()=>{app.innerHTML=`<p class="say">I'm having a hard time right now.</p><p class="say" style="font-size:32px">Please stay with me. You don't have to fix it. Just be here.</p>
+${S.people.length?`<div class="card"><h3>People who can help me</h3>${listHTML(STEPS[4])}</div>`:''}
+${S.safe.length?`<div class="card"><h3>Help me make it safer</h3>${listHTML(STEPS[6])}</div>`:''}
+<div class="card"><h3>If you're worried about me</h3><p>Call or text 988 together. If I'm in danger right now, call 911.</p></div><button data-go="home">Home</button>`};
+V.card=()=>{renderPrint();app.innerHTML=`<h2>Print my card</h2><p>This prints your whole plan on one page in warm paper colors. Fold it and keep it in your wallet, your car, or by the bed.</p><button id="pp">Print it</button><button class="ghost" data-go="home">Home</button>`;$('#pp').onclick=()=>window.print()};
+function renderPrint(){$('#print').innerHTML=`<h1>${S.name?esc(S.name)+"'s plan":'My plan'} for the hard nights</h1>${STEPS.map((s,i)=>`<h3>${i+1}. ${s.t}</h3><ul>${S[s.k].map(x=>`<li>${s.kind==='contact'?esc(x.name)+' — '+esc(x.phone):esc(x)}</li>`).join('')||(s.k==='pros'?'':'<li>&nbsp;</li>')}${s.k==='pros'?'<li>988 Suicide and Crisis Lifeline — call or text 988</li>':''}</ul>`).join('')}<p class="foot">In danger right now: call 911. Any time: call or text 988.</p>`}
+V.helper=()=>{app.innerHTML=`<h2>Helping someone build theirs</h2>
+<div class="card"><h3>Build it together, when it's calm</h3><p>A plan made on a good day is there on a bad one. Sit side by side. Let them hold the phone.</p></div>
+<div class="card"><h3>Use their words</h3><p>"I stop answering texts" works better than a word from a checklist. If it sounds like them, they'll use it.</p></div>
+<div class="card"><h3>Ask about the hard part</h3><p>Ask straight out if there's anything at home they could hurt themselves with, and who could hold it for a while. Asking doesn't put the idea in someone's head. Time and distance save lives.</p></div>
+<div class="card"><h3>Practice it</h3><p>Try the coping skills now, while things are okay, so they come automatically later. If one doesn't work, pull the next one.</p><a class="btn ghost" href="https://schmidtweston-ship-it.github.io/next-one/">Practice skills in Next One</a></div>
+<div class="card"><h3>Follow up</h3><p>Check in tomorrow. Then again in a few days. Ask "did you open it?" and "what would you change?"</p></div>
+<p class="dim"><small>Still Here follows the six-part safety plan many counselors use (warning signs, coping on your own, people and places, people to ask, professionals, and a safer space), plus reasons for living. It doesn't replace care.</small></p><button data-go="home">Home</button>`};
+V.more=()=>{app.innerHTML=`<h2>Settings and backup</h2>
+<div class="card"><h3>My name</h3><input id="nmv" value="${esc(S.name)}" placeholder="First name (optional)"><button class="okb" id="nms">Save name</button></div>
+<div class="card"><h3>Read things out loud</h3><button class="${S.voice?'okb':'ghost'}" id="vc">${S.voice?'On. Tap to turn off.':'Off. Tap to turn on.'}</button></div>
+<div class="card"><h3>Backup</h3><p class="dim">Your plan is only on this phone. Save a copy so you don't lose it.</p><button id="ex">Save a copy</button><label class="btn ghost" for="im">Bring back a copy</label><input id="im" type="file" accept=".json,application/json" class="hidden"></div>
+${S.walks.length?`<div class="card"><h3>Hard nights I got through</h3><p>${S.walks.length}</p>${S.walks.slice(0,8).map(w=>`<p class="dim"><small>${new Date(w.at).toLocaleString()}${w.helped&&w.helped.length>8?' — '+esc(w.helped):''}</small></p>`).join('')}</div>`:''}
+<button class="ghost" data-go="home">Home</button>`;
+ $('#nms').onclick=()=>{S.name=$('#nmv').value.trim();save();go('home')};
+ $('#vc').onclick=()=>{S.voice=!S.voice;save();V.more()};
+ $('#ex').onclick=()=>{const b=new Blob([JSON.stringify(S,null,1)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='still-here-plan-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove()};
+ $('#im').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.self))throw 0;if(confirm('Replace the plan on this phone with this copy?')){S=Object.assign(blank(),d);save();go('home')}}catch(x){alert("That file isn't a Still Here copy.")}};r.readAsText(f)}};
+app.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b){e.preventDefault();go(b.dataset.go)}});
+const h=location.hash.slice(1);go(V[h]&&h!=='build'?h:'home');
+window.addEventListener('beforeprint',renderPrint);renderPrint();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script></body></html>
